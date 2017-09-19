@@ -63,7 +63,7 @@ def generateQid(df):
 #     columns = ['query', 'product_title', 'product_description']
 #     for column in columns:
 #         df[column] = df[column].apply(lambda x: str(TextBlob(str(x).decode('utf-8')).correct()))
-#     return df
+#     return df 
 
 if __name__ == '__main__':
     #(originDataPath, processedDataPath) = (sys.argv[1], sys.argv[2])
