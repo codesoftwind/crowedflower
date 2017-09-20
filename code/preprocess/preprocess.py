@@ -21,6 +21,7 @@ from nltk.stem import WordNetLemmatizer
 import time
 import sys
 import numpy as np
+import ngram
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -59,27 +60,47 @@ def generateQid(df):
     return df
 
 
+# 为query，product_title，product_description生成n-gram
+def generateNGram(df):
+    # unigram
+    df['query_unigram'] = df['query'].apply(lambda x: ngram.getUnigram(x))
+    df['title_unigram'] = df['product_title'].apply(lambda x: ngram.getUnigram(x))
+    df['description_unigram'] = df['product_description'].apply(lambda x: ngram.getUnigram(x))
+    # bigram
+    df['query_bigram'] = df['query'].apply(lambda x: ngram.getBigram(x, '_'))
+    df['title_bigram'] = df['product_title'].apply(lambda x: ngram.getBigram(x, '_'))
+    df['description_bigram'] = df['product_description'].apply(lambda x: ngram.getBigram(x, '_'))
+    # trigram
+    df['query_trigram'] = df['query'].apply(lambda x: ngram.getTrigram(x, '_'))
+    df['title_trigram'] = df['product_title'].apply(lambda x: ngram.getTrigram(x, '_'))
+    df['description_trigram'] = df['product_description'].apply(lambda x: ngram.getTrigram(x, '_'))
+    return df
+
 # def spellcorrect(df):
 #     columns = ['query', 'product_title', 'product_description']
 #     for column in columns:
 #         df[column] = df[column].apply(lambda x: str(TextBlob(str(x).decode('utf-8')).correct()))
-#     return df 
+#     return df
 
 if __name__ == '__main__':
     #(originDataPath, processedDataPath) = (sys.argv[1], sys.argv[2])
     print time.asctime(time.localtime(time.time()))
-    originDataPath = '../../data/processedTrainData.csv'
+    originDataPath = '../../data/train.csv'
     df = read_csv(originDataPath).fillna("")
     #df[['id', 'median_relevance', 'relevance_variance']] = df[['id', 'median_relevance', 'relevance_variance']].apply(pd.to_numeric)
-    # df = drophtmltags(df)
-    # print '-------------------------------------'
-    # print 'drop html tags finished!'
-    # df = stemDF(df)
-    # print '-------------------------------------'
-    # print 'stemming finished!'
-    # df.to_csv(processedDataPath, encoding='utf-8')
+    df = drophtmltags(df)
+    print '-------------------------------------'
+    print 'drop html tags finished!'
+    df = stemDF(df)
+    print '-------------------------------------'
+    print 'stemming finished!'
     df = generateQid(df)
+    print '-------------------------------------'
+    print 'generate qid finished!'
+    df = generateNGram(df)
+    print '-------------------------------------'
+    print 'generate n-gram finished!'
     f = open('../../data/preprocessedTrainData.pkl', 'w+')
     cPickle.dump(df, f)
     f.close()
-    # print time.asctime(time.localtime(time.time()))
+    print time.asctime(time.localtime(time.time()))
