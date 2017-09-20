@@ -76,6 +76,14 @@ def generateNGram(df):
     df['description_trigram'] = df['product_description'].apply(lambda x: ngram.getTrigram(x, '_'))
     return df
 
+
+# 为test数据加上假的median_relevance和relevance_variance
+def insertMRandRV(df):
+    testNum = df.shape[0]
+    df['median_relevance'] = np.ones(testNum)
+    df['relevance_variance'] = np.zeros(testNum)
+    return df
+
 # def spellcorrect(df):
 #     columns = ['query', 'product_title', 'product_description']
 #     for column in columns:
@@ -85,6 +93,8 @@ def generateNGram(df):
 if __name__ == '__main__':
     #(originDataPath, processedDataPath) = (sys.argv[1], sys.argv[2])
     print time.asctime(time.localtime(time.time()))
+
+    # 处理train data
     originDataPath = '../../data/train.csv'
     df = read_csv(originDataPath).fillna("")
     #df[['id', 'median_relevance', 'relevance_variance']] = df[['id', 'median_relevance', 'relevance_variance']].apply(pd.to_numeric)
@@ -103,4 +113,13 @@ if __name__ == '__main__':
     f = open('../../data/preprocessedTrainData.pkl', 'w+')
     cPickle.dump(df, f)
     f.close()
+    
+    # 处理test data
+    originDataPath = '../../data/test.csv'
+    df = read_csv(originDataPath)
+    df = insertMRandRV(df)
+    f = open('../../data/preprocessedTestData.pkl', 'w+')
+    cPickle.dump(df, f)
+    f.close()
+
     print time.asctime(time.localtime(time.time()))
