@@ -22,6 +22,7 @@ import time
 import sys
 import numpy as np
 import ngram
+import re
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
@@ -33,11 +34,16 @@ def drophtmltags(df):
     df['product_description'] = df['product_description'].apply(lambda x: BeautifulSoup(str(x), 'html5lib').get_text(separator=" "))
     return df
 
+
+# 分词，然后词型还原；分词采用正则表达式
+tokenPattern = r'\b\w+\b'
 def stemming(stemmer, sentence):
     stemmed = []
-    wordList = word_tokenize(str(sentence).decode('utf-8'))
+    wordList = [word.lower() for word in re.findall(tokenPattern, sentence, flags=re.UNICODE | re.LOCALE)]
+    # wordList = word_tokenize(str(sentence).decode('utf-8'))
+
     for word in wordList:
-        stemmedWord = stemmer.stem(word)
+        stemmedWord = stemmer.stem(str(word).decode('utf-8'))
         stemmed.append(stemmedWord)
         if word != stemmedWord:
             print word, '---', stemmedWord
@@ -95,6 +101,7 @@ if __name__ == '__main__':
     print time.asctime(time.localtime(time.time()))
 
     # 处理train data
+    print 'Process the train data!'
     originDataPath = '../../data/train.csv'
     df = read_csv(originDataPath).fillna("")
     #df[['id', 'median_relevance', 'relevance_variance']] = df[['id', 'median_relevance', 'relevance_variance']].apply(pd.to_numeric)
@@ -113,11 +120,24 @@ if __name__ == '__main__':
     f = open('../../data/preprocessedTrainData.pkl', 'w+')
     cPickle.dump(df, f)
     f.close()
-    
+
     # 处理test data
+    print 'Process the test data'
     originDataPath = '../../data/test.csv'
-    df = read_csv(originDataPath)
+    df = read_csv(originDataPath).fillna("")
     df = insertMRandRV(df)
+    df = drophtmltags(df)
+    print '-------------------------------------'
+    print 'drop html tags finished!'
+    df = stemDF(df)
+    print '-------------------------------------'
+    print 'stemming finished!'
+    df = generateQid(df)
+    print '-------------------------------------'
+    print 'generate qid finished!'
+    df = generateNGram(df)
+    print '-------------------------------------'
+    print 'generate n-gram finished!'
     f = open('../../data/preprocessedTestData.pkl', 'w+')
     cPickle.dump(df, f)
     f.close()
